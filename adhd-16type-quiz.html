@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADHD 16タイプ診断</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary: #6C5CE7;
+  --primary-light: #A29BFE;
+  --accent: #FF6B6B;
+  --accent2: #FECA57;
+  --accent3: #48DBFB;
+  --accent4: #10B981;
+  --bg: #0F0E17;
+  --bg-card: #1A1932;
+  --bg-card2: #232145;
+  --text: #FFFFFE;
+  --text-sub: #A7A9BE;
+  --gradient1: linear-gradient(135deg, #6C5CE7, #A29BFE);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans JP', 'Inter', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; overflow-x: hidden;
+}
+
+.bg-orbs { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; animation: float 12s ease-in-out infinite; }
+.orb:nth-child(1) { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; }
+.orb:nth-child(2) { width: 350px; height: 350px; background: var(--accent); bottom: -50px; right: -50px; animation-delay: -4s; }
+.orb:nth-child(3) { width: 300px; height: 300px; background: var(--accent3); top: 40%; left: 60%; animation-delay: -8s; }
+
+@keyframes float {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(30px,-30px) scale(1.05); }
+  66% { transform: translate(-20px,20px) scale(0.95); }
+}
+
+.container {
+  position: relative; z-index: 1;
+  max-width: 680px; margin: 0 auto; padding: 24px 20px;
+  min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+}
+
+/* LANDING */
+#landing { text-align: center; }
+.landing-badge {
+  display: inline-block; padding: 6px 18px; border-radius: 20px;
+  background: rgba(108,92,231,0.2); border: 1px solid rgba(108,92,231,0.4);
+  font-size: 12px; font-weight: 500; letter-spacing: 1px; color: var(--primary-light);
+  margin-bottom: 24px; text-transform: uppercase;
+}
+.landing-title {
+  font-size: 42px; font-weight: 900; line-height: 1.2; margin-bottom: 8px;
+  background: linear-gradient(135deg, #fff 30%, var(--primary-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.landing-sub { font-size: 18px; color: var(--text-sub); margin-bottom: 12px; font-weight: 300; }
+.landing-desc { font-size: 14px; color: var(--text-sub); line-height: 1.7; margin-bottom: 36px; opacity: 0.7; }
+.landing-axes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 40px; text-align: left; }
+.axis-card {
+  background: var(--bg-card); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px; padding: 16px; position: relative; overflow: hidden;
+}
+.axis-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+.axis-card:nth-child(1)::before { background: linear-gradient(135deg, #6C5CE7, #A29BFE); }
+.axis-card:nth-child(2)::before { background: linear-gradient(135deg, #FF6B6B, #FECA57); }
+.axis-card:nth-child(3)::before { background: linear-gradient(135deg, #48DBFB, #6C5CE7); }
+.axis-card:nth-child(4)::before { background: linear-gradient(135deg, #10B981, #6EE7B7); }
+.axis-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.axis-card:nth-child(1) .axis-label { color: var(--primary-light); }
+.axis-card:nth-child(2) .axis-label { color: var(--accent); }
+.axis-card:nth-child(3) .axis-label { color: var(--accent3); }
+.axis-card:nth-child(4) .axis-label { color: var(--accent4); }
+.axis-poles { font-size: 13px; color: var(--text-sub); }
+
+.btn-start {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 48px; border: none; border-radius: 60px;
+  background: var(--gradient1); color: white;
+  font-size: 18px; font-weight: 700; font-family: inherit;
+  cursor: pointer; transition: all 0.3s; box-shadow: 0 8px 32px rgba(108,92,231,0.4);
+}
+.btn-start:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(108,92,231,0.5); }
+
+/* QUIZ */
+#quiz { display: none; }
+.progress-wrap { margin-bottom: 32px; }
+.progress-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.progress-num { font-size: 14px; font-weight: 600; color: var(--primary-light); }
+.progress-bar-bg { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); background: var(--gradient1); }
+
+.question-card {
+  background: var(--bg-card); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 24px; padding: 36px 32px; margin-bottom: 24px;
+  animation: slideUp 0.4s ease;
+}
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.q-text { font-size: 20px; font-weight: 600; line-height: 1.6; margin-bottom: 32px; text-align: center; }
+
+/* 5-level scale */
+.q-scale-wrap { padding: 0 8px; }
+.q-scale-labels {
+  display: flex; justify-content: space-between; margin-bottom: 8px;
+}
+.q-scale-label-left, .q-scale-label-right {
+  font-size: 12px; color: var(--text-sub); max-width: 120px;
+}
+.q-scale-label-left { text-align: left; }
+.q-scale-label-right { text-align: right; }
+
+.q-scale-buttons {
+  display: flex; justify-content: center; gap: 12px; margin-bottom: 8px;
+}
+.q-scale-btn {
+  width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.12);
+  background: transparent; color: var(--text-sub); font-size: 16px; font-weight: 700;
+  font-family: inherit; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.q-scale-btn:hover { border-color: rgba(108,92,231,0.5); background: rgba(108,92,231,0.08); }
+.q-scale-btn.selected { border-color: var(--primary); background: rgba(108,92,231,0.2); color: var(--text); }
+.q-scale-btn.selected.s0 { border-color: #6C5CE7; background: rgba(108,92,231,0.25); }
+.q-scale-btn.selected.s1 { border-color: #8B7CF6; background: rgba(139,124,246,0.2); }
+.q-scale-btn.selected.s2 { border-color: #9CA3AF; background: rgba(156,163,175,0.15); }
+.q-scale-btn.selected.s3 { border-color: #F472B6; background: rgba(244,114,182,0.2); }
+.q-scale-btn.selected.s4 { border-color: #EC4899; background: rgba(236,72,153,0.25); }
+
+.q-scale-hint {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--text-sub); opacity: 0.5; padding: 0 6px;
+}
+
+.q-nav { display: flex; justify-content: space-between; align-items: center; }
+.btn-nav {
+  padding: 12px 28px; border: none; border-radius: 40px;
+  font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s;
+}
+.btn-prev { background: rgba(255,255,255,0.06); color: var(--text-sub); }
+.btn-prev:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+.btn-prev:disabled { opacity: 0.3; cursor: default; }
+.btn-next { background: var(--gradient1); color: white; box-shadow: 0 4px 16px rgba(108,92,231,0.3); }
+.btn-next:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(108,92,231,0.4); }
+.btn-next:disabled { opacity: 0.4; cursor: default; transform: none; box-shadow: none; }
+
+/* RESULT */
+#result { display: none; text-align: center; }
+.result-reveal { animation: fadeScale 0.8s ease; }
+@keyframes fadeScale { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+.result-type-code {
+  display: inline-block; padding: 8px 24px; border-radius: 12px;
+  background: rgba(108,92,231,0.2); border: 1px solid rgba(108,92,231,0.3);
+  font-size: 16px; font-weight: 700; letter-spacing: 3px; color: var(--primary-light);
+  margin-bottom: 16px; font-family: 'Inter', monospace;
+}
+.result-name {
+  font-size: 36px; font-weight: 900; margin-bottom: 8px;
+  background: linear-gradient(135deg, #fff, var(--primary-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.result-tagline { font-size: 16px; color: var(--text-sub); margin-bottom: 32px; font-weight: 300; }
+
+.adhd-score-section { margin-bottom: 32px; }
+.adhd-score-card {
+  background: var(--bg-card); border-radius: 20px; padding: 28px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.adhd-score-label { font-size: 13px; font-weight: 600; color: var(--text-sub); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+.adhd-score-num { font-size: 56px; font-weight: 900; font-family: 'Inter', sans-serif; margin-bottom: 4px; line-height: 1; }
+.adhd-score-sub { font-size: 13px; margin-bottom: 16px; font-weight: 600; }
+.adhd-bar-outer { height: 12px; background: rgba(255,255,255,0.06); border-radius: 6px; overflow: hidden; }
+.adhd-bar-inner { height: 100%; border-radius: 6px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1) 0.3s; }
+.adhd-bar-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-sub); margin-top: 6px; opacity: 0.7; }
+
+.adhd-axis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+.adhd-axis-item {
+  background: var(--bg-card2); border-radius: 14px; padding: 14px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.adhd-axis-name { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 6px; }
+.adhd-axis-score { font-size: 28px; font-weight: 900; font-family: 'Inter', sans-serif; line-height: 1; margin-bottom: 2px; }
+.adhd-axis-which { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; }
+.adhd-axis-bar-bg { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+.adhd-axis-bar-fill { height: 100%; border-radius: 3px; transition: width 1s ease 0.6s; }
+
+.result-axes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; text-align: left; }
+.result-axis-card { background: var(--bg-card); border-radius: 16px; padding: 16px; border: 1px solid rgba(255,255,255,0.06); }
+.result-axis-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.result-axis-bar-bg {
+  height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px;
+  overflow: hidden; margin-bottom: 6px; position: relative;
+}
+.result-axis-bar-bg::after {
+  content: ''; position: absolute; left: 50%; top: 0; width: 2px; height: 100%;
+  background: rgba(255,255,255,0.15); transform: translateX(-50%);
+}
+.result-axis-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease 0.5s; }
+.result-axis-poles { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-sub); }
+
+.result-detail-card {
+  background: var(--bg-card); border-radius: 20px; padding: 28px;
+  border: 1px solid rgba(255,255,255,0.06); margin-bottom: 16px; text-align: left;
+}
+.result-detail-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.result-detail-text { font-size: 14px; color: var(--text-sub); line-height: 1.8; }
+.result-detail-list { list-style: none; padding: 0; }
+.result-detail-list li {
+  padding: 6px 0; font-size: 14px; color: var(--text-sub);
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.result-detail-list li::before { content: '→'; color: var(--primary-light); flex-shrink: 0; margin-top: 1px; }
+
+.celeb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.celeb-item { background: var(--bg-card2); border-radius: 14px; padding: 14px; border: 1px solid rgba(255,255,255,0.04); }
+.celeb-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.celeb-reason { font-size: 12px; color: var(--text-sub); line-height: 1.5; }
+
+.compat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.compat-item { background: var(--bg-card2); border-radius: 14px; padding: 14px; text-align: center; border: 1px solid rgba(255,255,255,0.04); }
+.compat-emoji { font-size: 28px; margin-bottom: 6px; }
+.compat-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.compat-code { font-size: 11px; color: var(--text-sub); font-family: 'Inter', monospace; }
+.compat-label {
+  display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px;
+  border-radius: 6px; margin-bottom: 8px; letter-spacing: 0.5px;
+}
+.compat-good .compat-label { background: rgba(72,219,251,0.15); color: var(--accent3); }
+.compat-bad .compat-label { background: rgba(255,107,107,0.15); color: var(--accent); }
+
+.advice-list { list-style: none; padding: 0; }
+.advice-list li {
+  padding: 10px 0; font-size: 14px; color: var(--text-sub); line-height: 1.7;
+  display: flex; align-items: flex-start; gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.advice-list li:last-child { border-bottom: none; }
+.advice-num {
+  flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+  background: rgba(108,92,231,0.2); color: var(--primary-light);
+  font-size: 12px; font-weight: 700; display: flex; align-items: center;
+  justify-content: center; margin-top: 2px;
+}
+
+.keyword-tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 28px; }
+.keyword-tag {
+  padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  background: rgba(108,92,231,0.12); color: var(--primary-light);
+  border: 1px solid rgba(108,92,231,0.2);
+}
+
+.btn-retry {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 36px; border: 2px solid rgba(255,255,255,0.15); border-radius: 40px;
+  background: transparent; color: var(--text); font-size: 15px; font-weight: 600;
+  font-family: inherit; cursor: pointer; transition: all 0.2s; margin-top: 24px;
+}
+.btn-retry:hover { border-color: var(--primary); background: rgba(108,92,231,0.1); }
+
+.result-emoji { font-size: 64px; margin-bottom: 16px; }
+.section-divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 8px 0 24px; }
+
+@media (max-width: 600px) {
+  .container { padding: 16px; }
+  .landing-title { font-size: 30px; }
+  .landing-axes { grid-template-columns: 1fr; }
+  .result-axes-grid { grid-template-columns: 1fr; }
+  .celeb-grid { grid-template-columns: 1fr; }
+  .compat-grid { grid-template-columns: 1fr; }
+  .question-card { padding: 24px 20px; }
+  .q-text { font-size: 17px; }
+  .result-name { font-size: 28px; }
+  .adhd-score-num { font-size: 44px; }
+  .q-scale-btn { width: 48px; height: 48px; font-size: 14px; }
+  .q-scale-buttons { gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-orbs"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+
+<div class="container">
+
+  <!-- LANDING -->
+  <div id="landing">
+    <div class="landing-badge">Personality Quiz</div>
+    <h1 class="landing-title">ADHD 16タイプ診断</h1>
+    <p class="landing-sub">あなたの脳のクセ、16タイプで読み解く</p>
+    <p class="landing-desc">4つの軸 × 20の質問で、あなたのADHD傾向をタイプ分類します。<br>正解はありません。直感で答えてください。</p>
+    <div class="landing-axes">
+      <div class="axis-card">
+        <div class="axis-label">軸1 — 多動</div>
+        <div class="axis-poles">身体多動 ⇔ 思考多動</div>
+      </div>
+      <div class="axis-card">
+        <div class="axis-label">軸2 — 注意</div>
+        <div class="axis-poles">過集中 ⇔ 散漫</div>
+      </div>
+      <div class="axis-card">
+        <div class="axis-label">軸3 — エンジン</div>
+        <div class="axis-poles">興味ドリブン ⇔ 締切ドリブン</div>
+      </div>
+      <div class="axis-card">
+        <div class="axis-label">軸4 — 社会性</div>
+        <div class="axis-poles">共感型 ⇔ マイペース型</div>
+      </div>
+    </div>
+    <button class="btn-start" onclick="startQuiz()">
+      診断スタート
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz">
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span class="progress-num" id="progressNum">Q1 / 20</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBar" style="width:5%"></div>
+      </div>
+    </div>
+    <div class="question-card" id="questionCard">
+      <div class="q-text" id="qText"></div>
+      <div class="q-scale-wrap">
+        <div class="q-scale-labels">
+          <span class="q-scale-label-left" id="labelLeft"></span>
+          <span class="q-scale-label-right" id="labelRight"></span>
+        </div>
+        <div class="q-scale-buttons" id="scaleButtons"></div>
+        <div class="q-scale-hint">
+          <span>とても当てはまる</span>
+          <span>どちらでもない</span>
+          <span>とても当てはまる</span>
+        </div>
+      </div>
+    </div>
+    <div class="q-nav">
+      <button class="btn-nav btn-prev" id="btnPrev" onclick="prevQ()" disabled>← 戻る</button>
+      <button class="btn-nav btn-next" id="btnNext" onclick="nextQ()" disabled>次へ →</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result"></div>
+
+</div>
+
+<script>
+// ===== QUESTIONS =====
+// Each question has: text (question), axis (0-3), leftLabel, rightLabel
+// Score: button 0 = +2 (left pole), 1 = +1, 2 = 0, 3 = -1, 4 = -2 (right pole)
+// axis 0: B(+) vs M(-), axis 1: H(+) vs S(-), axis 2: I(+) vs D(-), axis 3: E(+) vs P(-)
+
+const questionsOriginal = [
+  // AXIS 0: 多動 — 身体(B) vs 思考(M) — 5問（シナリオ型）
+  { text: "カフェで友達を待っている。15分遅れるとLINEが来た。あなたは…",
+    axis: 0, leftLabel: "店の外を歩き回る", rightLabel: "スマホで調べ物の沼に落ちる" },
+  { text: "日曜の午後、特に予定がない。ふと気づくと自分は…",
+    axis: 0, leftLabel: "部屋の模様替えや散歩をしている", rightLabel: "Wikiの連鎖リンクを3時間読んでいる" },
+  { text: "つまらない映画を見ている途中、自分に起きていること",
+    axis: 0, leftLabel: "ポップコーンを食べたり姿勢を変えまくる", rightLabel: "映画と全然関係ない空想をしている" },
+  { text: "長い電話会議で自分がミュートのとき、無意識にやっていること",
+    axis: 0, leftLabel: "ペン回し・貧乏ゆすり・立ち歩き", rightLabel: "別の企画のアイデアを考え始める" },
+  { text: "引っ越し作業中、友達があなたについて言いそうなこと",
+    axis: 0, leftLabel: "「動きすぎ。落ち着いて」", rightLabel: "「手が止まってるけど、何考えてるの？」" },
+
+  // AXIS 1: 注意 — 過集中(H) vs 散漫(S) — 5問（シナリオ型）
+  { text: "気になるYouTube動画を見つけた。3時間後のあなた",
+    axis: 1, leftLabel: "同じチャンネルの動画を全部見ている", rightLabel: "10本の動画を2分ずつ見て何も覚えていない" },
+  { text: "仕事中にSlackの通知が鳴った。あなたの反応は",
+    axis: 1, leftLabel: "気づかない。集中が途切れるのは30分後", rightLabel: "即座に開いて、そのまま別の話題に流される" },
+  { text: "料理中にタイマーが鳴った。あなたにありがちなのは",
+    axis: 1, leftLabel: "レシピの改良に夢中で、タイマーも聞こえない", rightLabel: "別のことを始めてて、鍋の存在を忘れている" },
+  { text: "本屋に行った。帰る時にカバンに入っているのは",
+    axis: 1, leftLabel: "一つのジャンルの本が5冊", rightLabel: "バラバラのジャンルの本が5冊" },
+  { text: "友人が「昨日何してた？」と聞いてきた。あなたの答え",
+    axis: 1, leftLabel: "「気づいたら深夜3時まで〇〇してた」", rightLabel: "「色々やってたけど…何も終わってないかも」" },
+
+  // AXIS 2: エンジン — 興味(I) vs 締切(D) — 5問（シナリオ型）
+  { text: "夏休みの宿題。あなたのパターンに近いのは",
+    axis: 2, leftLabel: "好きな自由研究だけ初日に終わらせた", rightLabel: "8月31日に全教科まとめてやった" },
+  { text: "転職サイトで気になる求人を見つけた。応募するきっかけは",
+    axis: 2, leftLabel: "「この仕事面白そう！」というワクワク", rightLabel: "「今の職場もう限界…」という追い詰められ感" },
+  { text: "資格の勉強。一番集中できたのはどんな時？",
+    axis: 2, leftLabel: "その分野が純粋に面白くなった時", rightLabel: "試験日が迫ってきた時" },
+  { text: "上司に「来月でいいよ」と言われた仕事。あなたのリアルは",
+    axis: 2, leftLabel: "面白い部分だけ先にやり始めてしまう", rightLabel: "来月まで1ミリも手をつけない" },
+  { text: "人生で一番がんばれた経験を思い出すと、それは…",
+    axis: 2, leftLabel: "夢中になれるテーマに出会えた時", rightLabel: "もう後がない状況に追い込まれた時" },
+
+  // AXIS 3: 社会性 — 共感型(E) vs マイペース型(P) — 5問（シナリオ型）
+  { text: "飲み会で誰かが微妙な発言をした。あなたは",
+    axis: 3, leftLabel: "場の空気の変化を瞬時に感じ取る", rightLabel: "後で人に言われて初めて気づく" },
+  { text: "同僚がいつもと違う表情で出社してきた。あなたは",
+    axis: 3, leftLabel: "「何かあった？」と声をかけずにいられない", rightLabel: "特に気にならず自分の作業を続ける" },
+  { text: "LINEグループで意見が割れている。あなたの動き方",
+    axis: 3, leftLabel: "全員の気持ちを考えて発言を調整する", rightLabel: "自分の意見をストレートに書き込む" },
+  { text: "プレゼンの後、上司の顔色が曇っていた。帰り道のあなた",
+    axis: 3, leftLabel: "何がまずかったかグルグル考え続ける", rightLabel: "「まあ聞きたいことあれば聞いてくるでしょ」" },
+  { text: "チームメンバーの誕生日。あなたにありがちなのは",
+    axis: 3, leftLabel: "相手の好みを分析してプレゼントを選ぶ", rightLabel: "「あ、誕生日だったの？おめでとう」" }
+];
+
+let questions = [];
+let currentQ = 0;
+let answers = new Array(20).fill(null); // 0-4
+let shuffleMap = [];
+
+// ===== TYPE DATA =====
+const typeData = {
+  'BHIE': { name: '熱血キャプテン型', emoji: '🔥',
+    tagline: '人の気持ちを汲みながら、手を動かして没頭する作り手',
+    keywords: ['#空気読み×没入', '#繊細な職人', '#手を動かす共感者', '#こだわりの仕事人'],
+    desc: '身体を動かしながら興味に深く没入し、同時に場の空気や人の感情にも敏感。人のために良いものを作りたいという衝動が原動力。周囲の期待を察知できるからこそ、作品の質が上がる一方で、他人の反応を気にしすぎて疲弊することも。',
+    strengths: ['人のニーズを察知した上で緻密なものを作れる', '没入力と共感力の掛け算で質の高い仕事をする', '手を動かしながら考えるタイプで実行力がある'],
+    challenges: ['周囲の期待に応えようとして過集中が暴走する', '人の反応が気になって完璧主義に陥る', '興味がないことには共感力があっても動けない'],
+    celebs: [
+      { name: '宮崎駿', reason: '観客の感情を繊細に計算しながら、手描きに没頭する職人気質' },
+      { name: 'イチロー', reason: '周囲の期待を背負いつつ、道具へのこだわりと反復練習に没入' },
+      { name: '草間彌生', reason: '強烈な感覚体験を他者に届けるために創作し続ける衝動' },
+      { name: 'テイラー・スウィフト', reason: 'ファンの感情を汲み取りながら完璧主義的にパフォーマンスを磨く' }
+    ],
+    bestMatch: 'MSIP', worstMatch: 'BSDP',
+    advice: ['「相手のため」と「自分の興味」を区別する時間を持つ', '完璧を目指すより「80点で出す」をルール化する', '人の反応を確認する回数を1日N回と決めて制限する', '没頭タイムは通知をオフにして「空気を読まない時間」を作る'] },
+
+  'BHIP': { name: '一点突破イノシシ型', emoji: '🐗',
+    tagline: 'やりたいことに向かって猪突猛進する実行者',
+    keywords: ['#猪突猛進', '#マイペースの極み', '#やってから考える', '#不屈の行動派'],
+    desc: '興味を持ったら身体が先に動く。好きなことへの集中力は凄まじく、周囲の空気も読まない（読めない）パワフルな行動派。自分のペースで突き進む力は圧倒的だが、チームワークでは衝突しがち。',
+    strengths: ['興味のある分野での行動力が異常に高い', '他人の目を気にせず突き進める推進力', '集中力と体力の掛け算で圧倒的な成果を出す'],
+    challenges: ['周囲の空気や感情に気づかず衝突する', '興味がないとテコでも動かない', '没頭しすぎて約束や人の話を忘れる'],
+    celebs: [
+      { name: '本田宗一郎', reason: 'エンジンへの偏愛と「やってみもせんで何がわかる」精神' },
+      { name: 'イーロン・マスク', reason: '空気を読まず、興味のある領域に猪突猛進する突破力' },
+      { name: 'マイケル・フェルプス', reason: 'ADHD公言。水泳への過集中と自分のペースを貫くスタイル' },
+      { name: '北大路魯山人', reason: '食と器への異常なこだわり、他人の評判を気にしない一徹さ' }
+    ],
+    bestMatch: 'MSIE', worstMatch: 'MSDE',
+    advice: ['会議の後に「相手はどう感じたか？」を1分だけ振り返る習慣', '周囲への報連相を「作業の一部」としてルーティン化する', '信頼できる人に「空気読み代行」を頼んでフィードバックをもらう', '興味がないタスクは「ゲーム化」「競争要素」でハックする'] },
+
+  'BHDE': { name: '期待背負い込みランナー型', emoji: '⚡',
+    tagline: '周囲の期待を背負い、締切前に覚醒する',
+    keywords: ['#期待に応える職人', '#追込み覚醒', '#空気読みすぎ', '#プレッシャー変換'],
+    desc: '普段は空気を読みすぎて身動きが取れないが、締切が迫ると過集中モードに突入。「期待に応えなきゃ」というプレッシャーが良くも悪くもエンジンになる。追い込まれた時の爆発力は本物。',
+    strengths: ['他者の期待を燃料に変えて爆発的な集中力を出す', '空気を読めるので仕上がりの方向性を外さない', '短期集中で驚異的な成果物を出せる'],
+    challenges: ['普段は他人の目が気になりすぎて動けない', '「期待に応えなきゃ」で自分を追い込みすぎる', '締切後の燃え尽きと自己嫌悪のループ'],
+    celebs: [
+      { name: '手塚治虫', reason: '読者の期待を背負いながら締切と戦い、追い込まれて覚醒した' },
+      { name: '庵野秀明', reason: '周囲の期待と締切の間で苦しみながら、最後に傑作を出す' },
+      { name: 'フレディ・マーキュリー', reason: '観客の空気を読みながら、本番で爆発的パフォーマンス' },
+      { name: 'アデル', reason: '感情を汲み取る共感力と、ステージでの集中力の爆発' }
+    ],
+    bestMatch: 'MSIP', worstMatch: 'BSDP',
+    advice: ['大きな締切を小さなマイルストーンに分割して「ミニ達成感」を作る', '他人の期待と自分のやりたいことを書き出して仕分ける', '追い込み後の回復日を必ずスケジュールに入れる', '「期待に応える」より「自分が納得する」を判断基準にする練習'] },
+
+  'BHDP': { name: '火事場の馬鹿力型', emoji: '🦍',
+    tagline: '空気は読まないが、最後の最後で圧倒的な力を出す',
+    keywords: ['#土壇場の帝王', '#鋼メンタル', '#なんとかなる主義', '#爆発力MAX'],
+    desc: '普段はマイペースに動き回っているが、追い込まれると人が変わったように集中する。他人の目を気にしないので余計なストレスがなく、極限状態で最もパフォーマンスが出る。',
+    strengths: ['極限のプレッシャーに強い鋼のメンタル', '他人の評価を気にしないので本質に集中できる', '身体の馬力と集中力で短期決戦に圧勝する'],
+    challenges: ['追い込まれないと何もしない', '周囲の感情や空気に鈍感で衝突しがち', '計画性がほぼゼロで同じパターンを繰り返す'],
+    celebs: [
+      { name: '長嶋茂雄', reason: '大舞台での集中力と、日常の空気読まなさのギャップ' },
+      { name: 'ウサイン・ボルト', reason: '本番直前までリラックス、スタートの瞬間に全エネルギー解放' },
+      { name: '新庄剛志', reason: '空気を読まない自由さと、追い込まれた時の爆発力' },
+      { name: '出川哲朗', reason: '空気を読まずに突っ込む勇気と、本番での瞬発力' }
+    ],
+    bestMatch: 'MHIE', worstMatch: 'MSDE',
+    advice: ['空気を読む練習より「信頼できる通訳者」を見つける方が早い', '自分の爆発力を活かせるポジション（トラブルシューター等）を狙う', '「追い込まれないと動けない」を責めず、仕組みで前倒しする', '日常の小さなタスクは「2分ルール」で即処理する習慣をつける'] },
+
+  'BSIE': { name: 'お祭りムードメーカー型', emoji: '🎪',
+    tagline: '人の気持ちを感じ取り、場のエネルギーで動き回る',
+    keywords: ['#ムードメーカー', '#共感ドリブン', '#多趣味多才', '#人が好き'],
+    desc: '身体を動かしながら次々と興味が移り、場の雰囲気や人の感情に敏感に反応する。人が集まる場所で活き活きし、場を盛り上げるムードメーカー。共感力が高く人を惹きつけるが、自分を見失いやすい。',
+    strengths: ['場の空気を読んで即座に行動できる瞬発力', '人を巻き込む天性の魅力とコミュ力', '好奇心が広く、多趣味多才でネタが尽きない'],
+    challenges: ['一つのことが続かず成果にならない', '他人の感情に振り回されて消耗する', '自分が本当にやりたいことを見失う'],
+    celebs: [
+      { name: '明石家さんま', reason: '場の空気を瞬時に読み、身体全体で反応するエネルギーの塊' },
+      { name: 'ウィル・スミス', reason: 'ADHD公言。場を支配するカリスマと多方面への好奇心' },
+      { name: '黒柳徹子', reason: '旺盛な好奇心と人の話に全身で反応する共感力' },
+      { name: 'リチャード・ブランソン', reason: 'ADHD公言。人を巻き込む天才、冒険好き' }
+    ],
+    bestMatch: 'MHIP', worstMatch: 'MHDP',
+    advice: ['「今月はこれだけ」と一つのテーマを決めて深堀り期間を作る', '人との予定と一人の時間を交互に配置して回復時間を確保', '「断る」練習を小さなことから始める', '「人のために動く」と「自分のために動く」の比率を週次で振り返る'] },
+
+  'BSIP': { name: 'ノマド放浪者型', emoji: '🏄',
+    tagline: '好奇心のまま、自分のペースでフィールドを駆け回る',
+    keywords: ['#フットワーク最軽量', '#マイペース冒険', '#飽き性の星', '#自由人'],
+    desc: '興味の赴くまま身体を動かし、次々と新しいことに手を出す。他人の目は気にせず自分のペースで世界を広げていく。行動範囲が異常に広いが、深くは掘らずに次へ。',
+    strengths: ['行動範囲と経験値が異常に広い', '他人の評価を気にせず挑戦できる', 'フットワークの軽さと適応力は天下一品'],
+    challenges: ['何一つ最後までやり遂げないことがある', '人の気持ちに鈍感で関係が浅くなりがち', '物を失くす・約束を忘れる頻度が高い'],
+    celebs: [
+      { name: '所ジョージ', reason: '多趣味の極み。自分のペースで何にでも手を出す好奇心' },
+      { name: 'さかなクン', reason: '興味のままに動き回り、自分のペースで世界を広げ続ける' },
+      { name: 'パリス・ヒルトン', reason: 'ADHD公言。次々と新しい活動に飛び込む行動力' },
+      { name: 'ジャッキー・チェン', reason: 'ジャンルを超えて挑戦し続ける身体能力と好奇心' }
+    ],
+    bestMatch: 'MHDE', worstMatch: 'MHDP',
+    advice: ['大事な物は定位置を決めてGPSトラッカーをつける', '新しいことを始める前に「今やっていることを一つ完了させる」ルール', '人間関係を深める時間を意図的にスケジュールに入れる', '予定はデジタルカレンダーに全て入れ、通知を複数回設定する'] },
+
+  'BSDE': { name: '便利屋パシリ型', emoji: '🌀',
+    tagline: '周囲の期待と空気に反応して走り回る',
+    keywords: ['#人のために動く', '#断れない体質', '#調整役の天才', '#自分が後回し'],
+    desc: '身体が動きやすく注意が散りやすい上に、空気を読みすぎる。周囲のニーズに反応してあちこち走り回るが、自分のことは常に後回し。人の気持ちがわかりすぎるがゆえに断れない。',
+    strengths: ['頼まれごとへの対応力と瞬発力が高い', '人の気持ちを汲んだ調整役が天職', '多方面のタスクを同時にさばける'],
+    challenges: ['自分のことが常に後回しになる', '断れずにキャパオーバーしがち', '他人の感情を背負いすぎて消耗が激しい'],
+    celebs: [
+      { name: '中居正広', reason: '場の空気を読んで走り回る調整力と、メンバーのための献身' },
+      { name: '有吉弘行', reason: '場を読んで瞬時に反応、周囲を立てながら自分は走り回る' },
+      { name: 'マザー・テレサ', reason: '他者の苦しみに反応し、自分を犠牲にしてでも動き続けた' },
+      { name: 'オプラ・ウィンフリー', reason: '共感力で人を動かしながら、多方面のプロジェクトを同時進行' }
+    ],
+    bestMatch: 'MHIP', worstMatch: 'BHDP',
+    advice: ['「自分のための時間」を先にカレンダーにブロックする', '依頼には即答せず「確認して返事します」を口癖にする', '週に1回「今週自分のためにやったこと」を振り返る', '他人の感情と自分の感情を区別する練習を意識する'] },
+
+  'BSDP': { name: '体当たりサバイバー型', emoji: '💥',
+    tagline: '空気は読まず、最後は勢いで突き破る',
+    keywords: ['#鋼メンタル', '#反省しない才能', '#突破力一級品', '#嵐を呼ぶ男'],
+    desc: '身体は動くが注意は散りやすく、締切が来るまで動かない。空気も読まないので余計なストレスがなく、最後は勢いで乗り切る。失敗しても引きずらず同じことを繰り返す。',
+    strengths: ['プレッシャーに動じない鋼のメンタル', '最後の追い込みでの爆発力は本物', '他人の評価を気にせず回復が早い'],
+    challenges: ['周囲をヒヤヒヤさせ続ける', '人の気持ちに気づかず信頼を損なう', '反省がないので同じ失敗を繰り返す'],
+    celebs: [
+      { name: 'ガイ・フィエリ', reason: 'エネルギー全開、失敗を恐れず、空気を読まず突き進む' },
+      { name: 'ジェレミー・クラークソン', reason: '考える前に動き、失敗しても笑い飛ばす突破力の塊' },
+      { name: 'クレヨンしんちゃん', reason: '（架空）動き回る・散漫・空気読まない・プレッシャーに動じない' },
+      { name: 'ジャイアン', reason: '（架空）マイペースの極み、勢いで全てを突破するスタイル' }
+    ],
+    bestMatch: 'MHIE', worstMatch: 'BHDE',
+    advice: ['品質チェックリストを作って「完了前に必ず1回通す」習慣', '過去の失敗パターンを3つ書き出して壁に貼る', '信頼できる人に「それ前もやったよ」と言ってもらう仕組み', '人の反応を1日1回だけ観察する「観察タイム」を設ける'] },
+
+  'MHIE': { name: '深夜の世界観構築型', emoji: '🌙',
+    tagline: '人の感情を汲み取りながら、頭の中に壮大な世界を編む',
+    keywords: ['#夜型の空想家', '#共感×深堀り', '#世界観の住人', '#頭の中が宇宙'],
+    desc: '思考が深く、興味のあるテーマに過集中で没入。同時に人の気持ちにも敏感で、作品や思考に「人を動かす力」がある。深夜に壮大な構想を練り上げるが、人の反応を気にしすぎてアウトプットが遅れがち。',
+    strengths: ['深い思考と共感力で、人の心に刺さるアウトプット', '他者の感情を理解した上で独自の世界観を構築できる', '一つのテーマを極限まで掘り下げる探求力'],
+    challenges: ['考えすぎ＋人の目を気にしすぎで行動に移せない', '感情のアップダウンが激しく消耗する', '現実世界のタスクが疎かになる'],
+    celebs: [
+      { name: '新海誠', reason: '繊細な人間描写と映像美への過集中、観客の感情を計算する力' },
+      { name: '米津玄師', reason: '他者の痛みを汲み取りながら、独自の世界観を音楽に変換する' },
+      { name: 'ティム・バートン', reason: '人の心の闇に共感し、頭の中の世界を映画にした構想力' },
+      { name: '村上春樹', reason: '内省的な思考と他者への共感が融合した独自の物語世界' }
+    ],
+    bestMatch: 'BHDP', worstMatch: 'BSDP',
+    advice: ['完成度20%でいいからとにかく外に出す習慣をつける', '「人の反応を見る」のは出した後。出す前に気にしない', '感情の波を記録して自分のバイオリズムを把握する', '生活基盤（食事・睡眠）を「創作インフラ」として死守する'] },
+
+  'MHIP': { name: '沼の住人型', emoji: '🔬',
+    tagline: '好きなことを好きなだけ、自分のペースで果てしなく深堀り',
+    keywords: ['#知の深海ダイバー', '#マイペース没入', '#偏愛の極み', '#専門家気質'],
+    desc: '思考の過集中×興味ドリブン×マイペース。好きな分野の知識量は圧倒的。他人の目を気にしないので雑音なく何時間でも没頭できる。社会的なシグナルには鈍感で、興味のない領域は存在しないも同然。',
+    strengths: ['特定分野の知識と洞察が異常に深い', '他人の評価を気にせず長時間集中できる', '自分のペースを守れるので安定して没入できる'],
+    challenges: ['社会的なシグナル（空気・表情）を見逃す', '興味のない分野は存在しないも同然', '人間関係が希薄になりがち'],
+    celebs: [
+      { name: 'アインシュタイン', reason: 'ADHD傾向が指摘される。物理への偏愛と社会的な無関心' },
+      { name: '落合陽一', reason: '研究テーマへの過集中と、興味外のことへの圧倒的な無関心' },
+      { name: 'ニコラ・テスラ', reason: '電気への偏執的な没頭、社会的シグナルの見落とし' },
+      { name: '羽生善治', reason: '将棋への底なしの探求心と盤面への過集中' }
+    ],
+    bestMatch: 'BSIE', worstMatch: 'BSDE',
+    advice: ['社会的スキルを「研究対象」として分析的に学ぶ', '食事と睡眠のアラームを設定し身体メンテを自動化する', '専門知識を人に教える機会を作りコミュニケーション筋を鍛える', '専門外タスクは「専門分野のための投資」と意味づけする'] },
+
+  'MHDE': { name: '一夜漬けの魔術師型', emoji: '🧠',
+    tagline: '周囲の期待に追い込まれ、繊細な頭脳が覚醒する',
+    keywords: ['#追込み覚醒', '#期待が重荷', '#完璧主義の呪い', '#短距離型天才'],
+    desc: '普段は人の目を気にしすぎて動けないが、締切のプレッシャーで過集中が発動。「期待に応えなきゃ」という焦りが逆にゾーンを開く。短時間で驚くほどの成果を出すが、毎回燃え尽きる。',
+    strengths: ['短時間で質の高いアウトプットを出す瞬発力', '人の期待を理解した上での仕上がり精度が高い', '追い込まれた時の思考の切れ味が凄まじい'],
+    challenges: ['普段は不安と他人の目で動けない', '期待に応えようとして完璧主義に陥る', '毎回燃え尽きて回復に時間がかかる'],
+    celebs: [
+      { name: '太宰治', reason: '他者の期待と締切の間で苦しみ、追い込まれて書く天才' },
+      { name: '又吉直樹', reason: '繊細な人間観察と、追い込まれた時に出てくる言葉の精度' },
+      { name: 'エミネム', reason: '周囲の視線と痛みを燃料に、プレッシャー下で爆発する表現力' },
+      { name: 'モーツァルト', reason: 'パトロンの期待と締切直前に一気に書き上げる瞬発力（逸話）' }
+    ],
+    bestMatch: 'BSIP', worstMatch: 'BSDP',
+    advice: ['「不安で動けない」は脳の特性。自分を責めずに仕組みで対処する', '他人の期待と自分の基準を書き出して分離する', '追い込み後の「回復日」を必ず確保する', '大きなタスクを「今日やる30分だけ」に分解する'] },
+
+  'MHDP': { name: '省エネスナイパー型', emoji: '🎯',
+    tagline: '空気は読まない。締切前に脳のスイッチが入り無敵モードに',
+    keywords: ['#ゾーン常連', '#普段は省エネ', '#本番に強い', '#マイペース無敵'],
+    desc: '思考の過集中×締切駆動×マイペース。ギリギリで別人のような集中力を発揮。他人の評価を気にしないのでストレスなく追い込みに入れる。普段の「何もしてない感」と本番の「無敵」のギャップが激しい。',
+    strengths: ['本番・修羅場での思考力は最強クラス', '他人の目を気にしないのでストレスフリーで集中', '頭の回転の速さで帳尻を合わせる能力'],
+    challenges: ['普段はやる気ゼロに見える', '空気を読まないので周囲との溝ができやすい', '実力があるのに態度で過小評価される'],
+    celebs: [
+      { name: 'ビートたけし', reason: 'マイペースな日常と、本番での切れ味のギャップ' },
+      { name: 'マイケル・ジョーダン', reason: '試合終盤の集中力が異常、プレッシャーをエネルギーに変換' },
+      { name: 'チャーチル', reason: '平時の怠惰さと戦時のゾーン突入のギャップが象徴的' },
+      { name: 'ドクター中松', reason: 'マイペースな日常と、追い込まれた時のゾーン突入' }
+    ],
+    bestMatch: 'BSIE', worstMatch: 'BSIE',
+    advice: ['「普段やる気がない」のは脳の省エネモード。本番力を武器と認める', '日常タスクは極限まで自動化・ルーティン化して脳を温存する', '人との関係を維持するための最小限のコミュニケーションをルーティン化', '本番力を活かせるポジション（プレゼン・トラブル対応等）を選ぶ'] },
+
+  'MSIE': { name: '全方位レーダー型', emoji: '📡',
+    tagline: 'あらゆる刺激と人の感情をキャッチし、脳内で物語を紡ぐ',
+    keywords: ['#共感の達人', '#脳内カオス', '#クリエイティブ体質', '#繋げる天才'],
+    desc: '思考が散漫に飛びながら、人の感情を敏感にキャッチ。頭の中は常にアイデアと他者への共感でいっぱいの空想家。異分野の情報を直感的に結びつける才能があるが、共感疲れで消耗しやすい。',
+    strengths: ['発想力と共感力の掛け算で人の心に刺さるアイデアを生む', '異分野を結びつける創造的な直感力', '人の気持ちへの理解が深く信頼される'],
+    challenges: ['頭の中がうるさすぎて疲れる', 'アイデアも共感も広がりすぎて何も形にならない', '他人の感情を背負いすぎて消耗する'],
+    celebs: [
+      { name: '糸井重里', reason: '散漫な好奇心と人間への共感で、心に刺さるコピーを生む' },
+      { name: 'ジョン・レノン', reason: '人の痛みへの共感と散漫な思考が独自の歌詞世界を生んだ' },
+      { name: '宮藤官九郎', reason: '散漫な妄想力と人間観察の共感力が独自の脚本を生む' },
+      { name: 'レオナルド・ダ・ヴィンチ', reason: '人体への共感的関心と、分野を超えた散漫な天才' }
+    ],
+    bestMatch: 'BHIP', worstMatch: 'MHDP',
+    advice: ['アイデアは全てメモアプリに即記録。頭の外に出して脳を軽くする', '共感疲れを防ぐため、人と会った後の一人時間をルーティン化', '週に1時間「アイデアを形にする時間」を固定で確保する', '情報摂取量を意図的に制限する日を作る（デジタルデトックス）'] },
+
+  'MSIP': { name: 'ひらめき花火型', emoji: '💡',
+    tagline: '自分のペースで思考が高速回転、アイデアを無限に生み出す',
+    keywords: ['#発想の泉', '#マイペース発明家', '#常識破壊', '#シナプス暴走'],
+    desc: '興味の赴くまま思考が飛び回り、次々とアイデアを生む。他人の目を気にしないので、常識の枠を軽々と飛び越えられる。形にするのは苦手だが、量と独自性は圧倒的。',
+    strengths: ['アイデアの量と独自性が圧倒的', '他人の目を気にしないので常識にとらわれない', '思考の瞬発力が高く連想が止まらない'],
+    challenges: ['形にするのが苦手で「口だけ」になりがち', '人の気持ちに鈍感で協力を得にくい', '一つに絞れずどれも中途半端になる'],
+    celebs: [
+      { name: '堀江貴文', reason: '空気を読まず次々とアイデアを量産、興味のまま多方面に展開' },
+      { name: 'エジソン', reason: 'ADHD傾向指摘。膨大な発明アイデアとマイペースな実験の連打' },
+      { name: 'カニエ・ウェスト', reason: '空気を読まない発想力、ジャンルを超えてアイデアが止まらない' },
+      { name: '秋元康', reason: '散漫な興味とマイペースさで常識外のアイデアを大量生産' }
+    ],
+    bestMatch: 'BHIE', worstMatch: 'MSDE',
+    advice: ['アイデアは「1日1個だけ本気で検討する」ルールで絞る', '「実装パートナー」を見つけて自分は発想に特化する', '新アイデアを思いついたら24時間寝かせてから判断する', '人に伝える時は相手の立場に立って話す練習をする'] },
+
+  'MSDE': { name: '脳内グルグル迷子型', emoji: '🔄',
+    tagline: '空気を読みすぎる頭の中で、思考が止まらずループする',
+    keywords: ['#思考ループ', '#心配性の極み', '#空気読みの呪縛', '#動けない自分が嫌'],
+    desc: '思考が散漫に飛びつつ、空気を読みすぎて「これ言っていいのか」「怒られないか」とグルグル。締切駆動なので自発的に動けず、他人の目が気になって堂々巡り。ただし多角的な視点と深い共感力は本物。',
+    strengths: ['多角的な視点で物事の全体像と人の気持ちの両方が見える', '潜在的なリスクや人間関係の問題に気づく直感力', '深い共感力と観察眼が信頼を生む'],
+    challenges: ['考えすぎ＋空気読みすぎで完全に動けなくなる', '不安と心配でエネルギーを大量消耗する', '自分を追い込んでしまい自己肯定感が下がる'],
+    celebs: [
+      { name: '夏目漱石', reason: '他者への繊細な観察と思考のループ、それを文学に昇華した' },
+      { name: 'ウディ・アレン', reason: '不安と空気読みのループを作品のテーマにし続けた' },
+      { name: 'シモーヌ・バイルズ', reason: 'ADHD公言。周囲の期待とのプレッシャーの戦い' },
+      { name: '坂本龍一', reason: '社会への繊細な感受性と、思考が止まらない知的探求' }
+    ],
+    bestMatch: 'BHDP', worstMatch: 'BSDP',
+    advice: ['思考ループに気づいたら「書き出す→優先順位→最小の一歩」の3ステップ', '「他人がどう思うか」と「自分がどうしたいか」を紙に分けて書く', '自分を責める声に名前をつけて客観視する（例:「グルグルさんが来た」）', '身体を動かすことで思考ループを物理的に断ち切る（散歩・ストレッチ）'] },
+
+  'MSDP': { name: '100タブ開きっぱなし型', emoji: '🖥️',
+    tagline: '空気は読まず、思考のタブを閉じられない自由な脳',
+    keywords: ['#タブ閉じられない', '#危機感ゼロ', '#なんとかなる教', '#マイペースの極北'],
+    desc: '思考は散漫、締切駆動、そしてマイペース。人の目を気にしないのでストレスは少ないが、何も進まない。大量の思考タブが開いたまま、どれも閉じられない。ただしこの「何も気にしない」性質が逆に大物感を出すことも。',
+    strengths: ['ストレス耐性が異常に高い', '他人の評価に振り回されない安定感', '複数の話題をゆるく同時把握できる'],
+    challenges: ['とにかく何も完了しない', '危機感がなさすぎて手遅れになりがち', '人の気持ちに鈍感で「何考えてるかわからない」と言われる'],
+    celebs: [
+      { name: '高田純次', reason: '適当力の極み。何も気にしないマイペースさが逆に魅力' },
+      { name: 'ジャック・ブラック', reason: 'ADHD傾向。散漫なエネルギーとマイペースが独特のカリスマに' },
+      { name: 'スヌーピー', reason: '（架空）考え事が多いのに何も解決しない、でも愛される' },
+      { name: 'のび太', reason: '（架空）散漫・締切無視・空気読まない、でも憎めないキャラ' }
+    ],
+    bestMatch: 'BHIE', worstMatch: 'BHDE',
+    advice: ['毎朝「今日やることは3つだけ」を紙に書いて貼る', '「危機感がない」ことを自覚し他人に締切管理を任せる', '人の気持ちを観察する「1日1回観察タイム」を設ける', '「完了した」達成感を味わう機会を意図的に作る（小さなタスクから）'] }
+};
+
+// ===== FUNCTIONS =====
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  shuffleMap = shuffleArray(Array.from({length: 20}, (_, i) => i));
+  questions = shuffleMap.map(i => questionsOriginal[i]);
+  answers = new Array(20).fill(null);
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  showQuestion(0);
+}
+
+function showQuestion(idx) {
+  currentQ = idx;
+  const q = questions[idx];
+
+  document.getElementById('progressNum').textContent = `Q${idx + 1} / 20`;
+  document.getElementById('progressBar').style.width = `${((idx + 1) / 20) * 100}%`;
+  document.getElementById('qText').textContent = q.text;
+  document.getElementById('labelLeft').textContent = q.leftLabel;
+  document.getElementById('labelRight').textContent = q.rightLabel;
+
+  const container = document.getElementById('scaleButtons');
+  container.innerHTML = '';
+  const labels = ['1', '2', '3', '4', '5'];
+  for (let i = 0; i < 5; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'q-scale-btn' + (answers[idx] === i ? ` selected s${i}` : '');
+    btn.textContent = labels[i];
+    btn.onclick = () => selectScale(idx, i);
+    container.appendChild(btn);
+  }
+
+  document.getElementById('btnPrev').disabled = idx === 0;
+  updateNextBtn();
+
+  const card = document.getElementById('questionCard');
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = 'slideUp 0.4s ease';
+}
+
+function selectScale(qi, val) {
+  answers[qi] = val;
+  const btns = document.querySelectorAll('.q-scale-btn');
+  btns.forEach((b, i) => {
+    b.className = 'q-scale-btn' + (i === val ? ` selected s${i}` : '');
+  });
+  updateNextBtn();
+  setTimeout(() => { if (currentQ < 19) nextQ(); }, 400);
+}
+
+function updateNextBtn() {
+  const btn = document.getElementById('btnNext');
+  btn.disabled = answers[currentQ] === null;
+  btn.textContent = currentQ === 19 ? '結果を見る →' : '次へ →';
+}
+
+function nextQ() {
+  if (answers[currentQ] === null) return;
+  if (currentQ < 19) showQuestion(currentQ + 1);
+  else showResult();
+}
+
+function prevQ() {
+  if (currentQ > 0) showQuestion(currentQ - 1);
+}
+
+function showResult() {
+  let scores = [0, 0, 0, 0];
+  for (let i = 0; i < 20; i++) {
+    const q = questions[i];
+    const value = 2 - answers[i]; // +2, +1, 0, -1, -2
+    scores[q.axis] += value;
+  }
+
+  const code =
+    (scores[0] >= 0 ? 'B' : 'M') +
+    (scores[1] >= 0 ? 'H' : 'S') +
+    (scores[2] >= 0 ? 'I' : 'D') +
+    (scores[3] >= 0 ? 'E' : 'P');
+
+  const t = typeData[code];
+  const maxScore = 10; // 5 questions × 2 max per question
+
+  // Gauge: left pole = positive score → bar should be on LEFT (low %)
+  // right pole = negative score → bar should be on RIGHT (high %)
+  const pcts = scores.map(s => Math.round(50 - (s / maxScore) * 50));
+
+  // Per-axis ADHD intensity (how extreme = how far from center)
+  const axisIntensity = scores.map(s => Math.round((Math.abs(s) / maxScore) * 100));
+
+  // Overall ADHD score = average of per-axis intensities
+  const adhdScore = Math.round(axisIntensity.reduce((a, b) => a + b, 0) / 4);
+
+  let adhdLevel, adhdColor;
+  if (adhdScore < 25) { adhdLevel = 'おだやか脳'; adhdColor = '#48DBFB'; }
+  else if (adhdScore < 50) { adhdLevel = 'ちょいクセ脳'; adhdColor = '#FECA57'; }
+  else if (adhdScore < 75) { adhdLevel = 'なかなかのクセ脳'; adhdColor = '#FF9FF3'; }
+  else { adhdLevel = 'フルスロットル脳'; adhdColor = '#FF6B6B'; }
+
+  const adhdComments = {
+    'おだやか脳': '各軸の傾向が穏やかです。ADHD的な特性はあまり強くなく、バランス型の脳と言えます。',
+    'ちょいクセ脳': 'いくつかの軸でADHD的な傾向が出ています。特定の場面で「自分っぽさ」が強く出るタイプ。',
+    'なかなかのクセ脳': '各軸で明確な偏りがあります。ADHD的な特性を強く持っており、それが強みにも弱みにもなります。',
+    'フルスロットル脳': '全軸で強い偏りが出ています。ADHD的な特性が全開。極端さこそがあなたの武器であり課題です。'
+  };
+
+  const axisLabels = [
+    { name: '多動', left: '身体多動', right: '思考多動', color: '#6C5CE7' },
+    { name: '注意', left: '過集中', right: '散漫', color: '#FF6B6B' },
+    { name: 'エンジン', left: '興味', right: '締切', color: '#48DBFB' },
+    { name: '社会性', left: '共感型', right: 'マイペース型', color: '#10B981' }
+  ];
+
+  const bestType = typeData[t.bestMatch];
+  const worstType = typeData[t.worstMatch];
+
+  document.getElementById('quiz').style.display = 'none';
+  const resultDiv = document.getElementById('result');
+  resultDiv.style.display = 'block';
+
+  resultDiv.innerHTML = `
+    <div class="result-reveal">
+      <div class="result-emoji">${t.emoji}</div>
+      <div class="result-type-code">${code}</div>
+      <h2 class="result-name">${t.name}</h2>
+      <p class="result-tagline">${t.tagline}</p>
+
+      <div class="keyword-tags">
+        ${t.keywords.map(k => `<span class="keyword-tag">${k}</span>`).join('')}
+      </div>
+
+      <div class="adhd-score-section">
+        <div class="adhd-score-card">
+          <div class="adhd-score-label">ADHD度</div>
+          <div class="adhd-score-num" style="color:${adhdColor}">${adhdScore}<span style="font-size:24px;opacity:0.6"> / 100</span></div>
+          <div class="adhd-score-sub" style="color:${adhdColor}">${adhdLevel}</div>
+          <div class="adhd-bar-outer">
+            <div class="adhd-bar-inner" data-width="${adhdScore}%" style="width:0%;background:linear-gradient(90deg, #48DBFB, ${adhdColor});"></div>
+          </div>
+          <div class="adhd-bar-labels"><span>おだやか</span><span>フルスロットル</span></div>
+          <div style="margin-top:14px;font-size:13px;color:var(--text-sub);line-height:1.7;text-align:left;">${adhdComments[adhdLevel]}</div>
+
+          <div class="adhd-axis-grid">
+            ${axisLabels.map((a, i) => {
+              const pole = scores[i] >= 0 ? a.left : a.right;
+              return `
+              <div class="adhd-axis-item">
+                <div class="adhd-axis-name" style="color:${a.color}">${a.name}</div>
+                <div class="adhd-axis-score" style="color:${a.color}">${axisIntensity[i]}<span style="font-size:14px;opacity:0.5">%</span></div>
+                <div class="adhd-axis-which">→ ${pole}寄り</div>
+                <div class="adhd-axis-bar-bg">
+                  <div class="adhd-axis-bar-fill" data-width="${axisIntensity[i]}%" style="width:0%;background:${a.color};"></div>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="result-axes-grid">
+        ${axisLabels.map((a, i) => `
+          <div class="result-axis-card">
+            <div class="result-axis-label" style="color:${a.color}">${a.name}</div>
+            <div class="result-axis-bar-bg">
+              <div class="result-axis-bar-fill" style="width:0%;background:${a.color}" data-width="${pcts[i]}%"></div>
+            </div>
+            <div class="result-axis-poles"><span>${a.left}</span><span>${a.right}</span></div>
+          </div>
+        `).join('')}
+      </div>
+
+      <hr class="section-divider">
+
+      <div class="result-detail-card">
+        <div class="result-detail-title">📝 あなたのタイプ</div>
+        <div class="result-detail-text">${t.desc}</div>
+      </div>
+
+      <div class="result-detail-card">
+        <div class="result-detail-title">✨ 強み</div>
+        <ul class="result-detail-list">${t.strengths.map(s => `<li>${s}</li>`).join('')}</ul>
+      </div>
+
+      <div class="result-detail-card">
+        <div class="result-detail-title">⚠️ つまずきポイント</div>
+        <ul class="result-detail-list">${t.challenges.map(c => `<li>${c}</li>`).join('')}</ul>
+      </div>
+
+      <hr class="section-divider">
+
+      <div class="result-detail-card">
+        <div class="result-detail-title">🌟 似ているかもしれない有名人</div>
+        <div class="celeb-grid">
+          ${t.celebs.map(c => `
+            <div class="celeb-item">
+              <div class="celeb-name">${c.name}</div>
+              <div class="celeb-reason">${c.reason}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="result-detail-card">
+        <div class="result-detail-title">💞 タイプ相性</div>
+        <div class="compat-grid">
+          <div class="compat-item compat-good">
+            <div class="compat-label">BEST MATCH</div>
+            <div class="compat-emoji">${bestType.emoji}</div>
+            <div class="compat-name">${bestType.name}</div>
+            <div class="compat-code">${t.bestMatch}</div>
+          </div>
+          <div class="compat-item compat-bad">
+            <div class="compat-label">CHALLENGING</div>
+            <div class="compat-emoji">${worstType.emoji}</div>
+            <div class="compat-name">${worstType.name}</div>
+            <div class="compat-code">${t.worstMatch}</div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="section-divider">
+
+      <div class="result-detail-card">
+        <div class="result-detail-title">🛠️ あなたのトリセツ — 今日からできること</div>
+        <ol class="advice-list">
+          ${t.advice.map((a, i) => `<li><span class="advice-num">${i+1}</span><span>${a}</span></li>`).join('')}
+        </ol>
+      </div>
+
+      <button class="btn-retry" onclick="retry()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+        もう一度診断する
+      </button>
+    </div>
+  `;
+
+  setTimeout(() => {
+    document.querySelectorAll('.result-axis-bar-fill').forEach(bar => { bar.style.width = bar.dataset.width; });
+    document.querySelectorAll('.adhd-bar-inner').forEach(bar => { bar.style.width = bar.dataset.width; });
+    document.querySelectorAll('.adhd-axis-bar-fill').forEach(bar => { bar.style.width = bar.dataset.width; });
+  }, 100);
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function retry() {
+  answers = new Array(20).fill(null);
+  currentQ = 0;
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('landing').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
